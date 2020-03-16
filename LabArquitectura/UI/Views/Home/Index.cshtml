@@ -1,0 +1,164 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="form-inline">
+    <div class="form-group mb-2">
+        <label> Album</label>
+    </div>
+    <div class="form-group mx-sm-3 mb-2">
+
+        <input type="text" class="form-control" id="albumId" placeholder="Ingrese Album">
+    </div>
+    <div class="btn btn-primary mb-2" onclick="BuscarAlbum()">Agregar</div>
+</div>
+
+<div id="mensajes">
+
+</div>
+
+
+<div id="pnlTabla">
+
+</div>
+
+
+
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            //llamar a CargarLista al cargar la pagina
+            CargarLista();
+        });
+        function CargarLista() {
+            //obtiene datos
+            
+            $('#pnlTabla').empty();
+
+            ulrBaseApi = 'https://localhost:44303/api/';
+
+                $.ajax({
+                    url: ulrBaseApi + 'values',
+                    type: 'GET',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                     xhrFields: {
+                        withCredentials: true
+                      },                    
+                    success: function (data, textStatus, xhr) {
+
+                        GenerarTabla(data);
+
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        //notify(xhr.responseText, notifyType.e);
+                        executing = undefined;
+                        //agregarMensaje(xhr.responseText);
+                        //console.log(xhr.responseText);
+
+                    },
+                    beforeSend: function () {
+                        //notify("Procesando, espere por favor...", notifyType.i);
+                        executing = true;
+                    }
+                });
+
+            // genera tabla
+        }
+       
+        function GenerarTabla(datos) {
+            //renderizar tabla en html
+            
+            var htmlTabla = '<table id="tablaAlbumes" class="table ">' +
+                '<thead class="thead-dark">' +
+                '<tr>' +
+                '<th scope="col">#</th>' +
+                '<th scope="col">Album</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>';
+
+            if (datos.length !== 0) {
+
+                $.each(datos, function (i, item) {
+
+                    htmlTabla += '<tr><td>' + item.id + '</td><td>' + item.title + '</td></tr>';
+
+                });
+
+            } else {
+                htmlTabla += '<tr><td>' + " " + '</td><td>' + "No hay Álbumes" + '</td></tr>';
+            }
+
+            
+            htmlTabla += '</tbody></table>';
+
+        $('#pnlTabla').append(htmlTabla);
+
+        }
+
+          function limpiarMensajes() {
+
+                $('#mensajes').empty();
+                
+         }
+
+         function agregarMensaje(mensaje) {
+
+             limpiarMensajes();
+
+             var template = '<div id="cookieConsent" class="alert alert-info alert-dismissible fade show" role="alert">' + mensaje +'</div>';
+                          
+             $("#mensajes" ).append( template);
+        }
+
+        function BuscarAlbum() {
+        ulrBaseApi = 'https://localhost:44303/api/';
+
+            var idVal = document.getElementById("albumId").value;
+            //if (id !== undefined) {
+            //    agregarMensaje("Debe ingresar un Album");
+            //    return false;
+            //}
+
+        $.ajax({
+            url: ulrBaseApi + 'values/'+idVal,
+            type: 'GET',
+            //data: { id: idVal },
+            contentType: 'json',
+            dataType: 'json',
+            async: true,
+
+            xhrFields: {
+                withCredentials: true
+            },
+           
+            success: function (result) {
+                
+                CargarLista();                
+                agregarMensaje(result); 
+            },
+            error: function (xhr) {
+                
+                executing = undefined;
+                agregarMensaje(xhr.responseText);
+                
+
+            },
+            beforeSend: function () {
+                //notify("Procesando, espere por favor...", notifyType.i);
+                executing = true;
+            }
+        });
+    }
+    </script>
+
+}
+
